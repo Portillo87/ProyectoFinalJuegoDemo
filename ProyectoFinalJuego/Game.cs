@@ -15,22 +15,23 @@ namespace ProyectoFinalJuego
         private int puntuacion;
         private SoundPlayer reproductorSonido;
 
+        public int Puntuacion
+        {
+            get { return puntuacion; }
+            private set { puntuacion = value; }
+        }
+
+        public int[,] Tablero
+        {
+            get { return tablero; }
+            private set { tablero = value; }
+        }
+
         public Game()
         {
-            tablero = new int[,]
-            {
-                { 5, 3, 0, 0, 7, 0, 0, 0, 0 },
-                { 6, 0, 0, 1, 9, 5, 0, 0, 0 },
-                { 0, 9, 8, 0, 0, 0, 0, 6, 0 },
-                { 8, 0, 0, 0, 6, 0, 0, 0, 3 },
-                { 4, 0, 0, 8, 0, 3, 0, 0, 1 },
-                { 7, 0, 0, 0, 2, 0, 0, 0, 6 },
-                { 0, 6, 0, 0, 0, 0, 2, 8, 0 },
-                { 0, 0, 0, 4, 1, 9, 0, 0, 5 },
-                { 0, 0, 0, 0, 8, 0, 0, 7, 9 }
-            };
-            puntuacion = 0;
-            reproductorSonido = new SoundPlayer(@"C:\Users\MINED\Desktop\background.wav");
+            Tablero = InicializarTablero();
+            Puntuacion = 0;
+            reproductorSonido = new SoundPlayer(@"C:\Users\PEDIDOS.SECO\source\repos\ProyectoFinalJuegoDemo");
         }
 
         public void Iniciar()
@@ -64,9 +65,9 @@ namespace ProyectoFinalJuego
         {
             while (true)
             {
-                Console.Clear();
+                AnsiConsole.Clear();
                 ImprimirTablero();
-                Console.WriteLine($"Puntuación: {puntuacion}");
+                AnsiConsole.MarkupLine($"Puntuación: {Puntuacion}");
                 Console.WriteLine("Ingresa tu movimiento en el formato 'fila columna número' (ej., '1 2 3' para colocar 3 en la fila 1, columna 2):");
                 var entrada = Console.ReadLine();
                 var partes = entrada.Split(' ');
@@ -77,7 +78,7 @@ namespace ProyectoFinalJuego
                     !int.TryParse(partes[2], out int numero) ||
                     fila < 1 || fila > 9 || columna < 1 || columna > 9 || numero < 1 || numero > 9)
                 {
-                    Console.WriteLine("Entrada inválida. Presiona cualquier tecla para intentarlo de nuevo...");
+                    AnsiConsole.MarkupLine("[red]Entrada inválida. Presiona cualquier tecla para intentarlo de nuevo...[/]");
                     Console.ReadKey();
                     continue;
                 }
@@ -85,30 +86,30 @@ namespace ProyectoFinalJuego
                 fila--;
                 columna--;
 
-                if (tablero[fila, columna] != 0)
+                if (Tablero[fila, columna] != 0)
                 {
-                    Console.WriteLine("La celda ya está llena. Presiona cualquier tecla para intentarlo de nuevo...");
+                    AnsiConsole.MarkupLine("[red]La celda ya está llena. Presiona cualquier tecla para intentarlo de nuevo...[/]");
                     Console.ReadKey();
                     continue;
                 }
 
-                tablero[fila, columna] = numero;
-                puntuacion += 10;
+                Tablero[fila, columna] = numero;
+                Puntuacion += 10;
                 ReproducirSonido(@"C:\Users\briya\Desktop\Will\JuegroSudoko1Demo\move.wav");
 
                 if (EsTableroCompleto())
                 {
-                    Console.Clear();
+                    AnsiConsole.Clear();
                     ImprimirTablero();
-                    Console.WriteLine($"¡Felicidades! Completaste el rompecabezas de Sudoku con una puntuación de {puntuacion}.");
+                    AnsiConsole.MarkupLine($"[green]¡Felicidades! Completaste el rompecabezas de Sudoku con una puntuación de {Puntuacion}.[/]");
                     ReproducirSonido(@"C:\Users\briya\Desktop\Will\JuegroSudoko1Demo\win.wav");
-                    Console.WriteLine("Presiona cualquier tecla para continuar...");
+                    AnsiConsole.MarkupLine("Presiona cualquier tecla para continuar...");
                     Console.ReadKey();
                     break;
                 }
             }
 
-            Console.WriteLine("¿Quieres jugar de nuevo? (s/n)");
+            AnsiConsole.MarkupLine("¿Quieres jugar de nuevo? (s/n)");
             if (Console.ReadLine().ToLower() == "s")
             {
                 ReiniciarTablero();
@@ -134,7 +135,7 @@ namespace ProyectoFinalJuego
                 Console.Write("│ ");
                 for (int j = 0; j < Size; j++)
                 {
-                    Console.Write(tablero[i, j] == 0 ? "  " : $"{tablero[i, j]} ");
+                    Console.Write(Tablero[i, j] == 0 ? "  " : $"{Tablero[i, j]} ");
                     if ((j + 1) % 3 == 0)
                         Console.Write("│ ");
                 }
@@ -151,7 +152,7 @@ namespace ProyectoFinalJuego
             {
                 for (int j = 0; j < Size; j++)
                 {
-                    if (tablero[i, j] == 0)
+                    if (Tablero[i, j] == 0)
                     {
                         return false;
                     }
@@ -162,7 +163,13 @@ namespace ProyectoFinalJuego
 
         private void ReiniciarTablero()
         {
-            tablero = new int[,]
+            Tablero = InicializarTablero();
+            Puntuacion = 0;
+        }
+
+        private int[,] InicializarTablero()
+        {
+            return new int[,]
             {
                 { 5, 3, 0, 0, 7, 0, 0, 0, 0 },
                 { 6, 0, 0, 1, 9, 5, 0, 0, 0 },
@@ -174,14 +181,14 @@ namespace ProyectoFinalJuego
                 { 0, 0, 0, 4, 1, 9, 0, 0, 5 },
                 { 0, 0, 0, 0, 8, 0, 0, 7, 9 }
             };
-            puntuacion = 0;
         }
 
         private void ReproducirSonido(string filePath)
         {
-            SoundPlayer musicPlayer = new SoundPlayer(filePath);
-            musicPlayer.Play();
+            using (SoundPlayer musicPlayer = new SoundPlayer(filePath))
+            {
+                musicPlayer.Play();
+            }
         }
-
     }
 }
