@@ -1,42 +1,23 @@
-﻿using Spectre.Console;
+using Spectre.Console;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Media;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace ProyectoFinalJuego
+namespace JuegoSudoku
 {
-    public class Game
+    internal class Juego
     {
-        private const int Size = 9;
         private int[,] tablero;
         private int puntuacion;
-        private SoundPlayer reproductorSonido;
 
-        public int Puntuacion
-        {
-            get { return puntuacion; }
-            private set { puntuacion = value; }
-        }
+        public const int Size = 9;
 
-        public int[,] Tablero
+        public Juego()
         {
-            get { return tablero; }
-            private set { tablero = value; }
-        }
-
-        public Game()
-        {
-            Tablero = InicializarTablero();
-            Puntuacion = 0;
-            reproductorSonido = new SoundPlayer(@"C:\Users\PEDIDOS.SECO\source\repos\ProyectoFinalJuegoDemo");
+            ReiniciarTablero();
+            puntuacion = 0;
         }
 
         public void Iniciar()
         {
-            reproductorSonido.PlayLooping();
             while (true)
             {
                 AnsiConsole.Clear();
@@ -55,7 +36,6 @@ namespace ProyectoFinalJuego
                         MostrarAyuda();
                         break;
                     case "Salir":
-                        reproductorSonido.Stop();
                         return;
                 }
             }
@@ -67,49 +47,39 @@ namespace ProyectoFinalJuego
             {
                 AnsiConsole.Clear();
                 ImprimirTablero();
-                AnsiConsole.MarkupLine($"Puntuación: {Puntuacion}");
+                Console.WriteLine($"Puntuación: {puntuacion}");
                 Console.WriteLine("Ingresa tu movimiento en el formato 'fila columna número' (ej., '1 2 3' para colocar 3 en la fila 1, columna 2):");
-                var entrada = Console.ReadLine();
-                var partes = entrada.Split(' ');
-
-                if (partes.Length != 3 ||
-                    !int.TryParse(partes[0], out int fila) ||
-                    !int.TryParse(partes[1], out int columna) ||
-                    !int.TryParse(partes[2], out int numero) ||
-                    fila < 1 || fila > 9 || columna < 1 || columna > 9 || numero < 1 || numero > 9)
+                string entrada = Console.ReadLine();
+                if (!TryParseInput(entrada, out int fila, out int columna, out int numero) ||
+                    fila < 0 || fila >= Size || columna < 0 || columna >= Size || numero < 1 || numero > 9)
                 {
-                    AnsiConsole.MarkupLine("[red]Entrada inválida. Presiona cualquier tecla para intentarlo de nuevo...[/]");
+                    Console.WriteLine("Entrada inválida. Presiona cualquier tecla para intentarlo de nuevo...");
                     Console.ReadKey();
                     continue;
                 }
 
-                fila--;
-                columna--;
-
-                if (Tablero[fila, columna] != 0)
+                if (tablero[fila, columna] != 0)
                 {
-                    AnsiConsole.MarkupLine("[red]La celda ya está llena. Presiona cualquier tecla para intentarlo de nuevo...[/]");
+                    Console.WriteLine("La celda ya está llena. Presiona cualquier tecla para intentarlo de nuevo...");
                     Console.ReadKey();
                     continue;
                 }
 
-                Tablero[fila, columna] = numero;
-                Puntuacion += 10;
-                ReproducirSonido(@"C:\Users\briya\Desktop\Will\JuegroSudoko1Demo\move.wav");
+                tablero[fila, columna] = numero;
+                puntuacion += 10;
 
                 if (EsTableroCompleto())
                 {
                     AnsiConsole.Clear();
                     ImprimirTablero();
-                    AnsiConsole.MarkupLine($"[green]¡Felicidades! Completaste el rompecabezas de Sudoku con una puntuación de {Puntuacion}.[/]");
-                    ReproducirSonido(@"C:\Users\briya\Desktop\Will\JuegroSudoko1Demo\win.wav");
-                    AnsiConsole.MarkupLine("Presiona cualquier tecla para continuar...");
+                    Console.WriteLine($"¡Felicidades! Completaste el rompecabezas de Sudoku con una puntuación de {puntuacion}.");
+                    Console.WriteLine("Presiona cualquier tecla para continuar...");
                     Console.ReadKey();
                     break;
                 }
             }
 
-            AnsiConsole.MarkupLine("¿Quieres jugar de nuevo? (s/n)");
+            Console.WriteLine("¿Quieres jugar de nuevo? (s/n)");
             if (Console.ReadLine().ToLower() == "s")
             {
                 ReiniciarTablero();
@@ -135,7 +105,7 @@ namespace ProyectoFinalJuego
                 Console.Write("│ ");
                 for (int j = 0; j < Size; j++)
                 {
-                    Console.Write(Tablero[i, j] == 0 ? "  " : $"{Tablero[i, j]} ");
+                    Console.Write(tablero[i, j] == 0 ? "  " : $"{tablero[i, j]} ");
                     if ((j + 1) % 3 == 0)
                         Console.Write("│ ");
                 }
@@ -152,7 +122,7 @@ namespace ProyectoFinalJuego
             {
                 for (int j = 0; j < Size; j++)
                 {
-                    if (Tablero[i, j] == 0)
+                    if (tablero[i, j] == 0)
                     {
                         return false;
                     }
@@ -163,32 +133,67 @@ namespace ProyectoFinalJuego
 
         private void ReiniciarTablero()
         {
-            Tablero = InicializarTablero();
-            Puntuacion = 0;
+            GenerarTableroAleatorio();
+            puntuacion = 0;
         }
 
-        private int[,] InicializarTablero()
+        private void GenerarTableroAleatorio()
         {
-            return new int[,]
-            {
-                { 5, 3, 0, 0, 7, 0, 0, 0, 0 },
-                { 6, 0, 0, 1, 9, 5, 0, 0, 0 },
-                { 0, 9, 8, 0, 0, 0, 0, 6, 0 },
-                { 8, 0, 0, 0, 6, 0, 0, 0, 3 },
-                { 4, 0, 0, 8, 0, 3, 0, 0, 1 },
-                { 7, 0, 0, 0, 2, 0, 0, 0, 6 },
-                { 0, 6, 0, 0, 0, 0, 2, 8, 0 },
-                { 0, 0, 0, 4, 1, 9, 0, 0, 5 },
-                { 0, 0, 0, 0, 8, 0, 0, 7, 9 }
-            };
-        }
+            tablero = new int[Size, Size];
+            Random random = new Random();
+            int count = 0;
 
-        private void ReproducirSonido(string filePath)
-        {
-            using (SoundPlayer musicPlayer = new SoundPlayer(filePath))
+            while (count < 20) // 20 números aleatorios para empezar
             {
-                musicPlayer.Play();
+                int fila = random.Next(0, Size);
+                int columna = random.Next(0, Size);
+                int numero = random.Next(1, 10);
+
+                if (tablero[fila, columna] == 0 && EsMovimientoValido(fila, columna, numero))
+                {
+                    tablero[fila, columna] = numero;
+                    count++;
+                }
             }
+        }
+
+        private bool EsMovimientoValido(int fila, int columna, int numero)
+        {
+            for (int i = 0; i < Size; i++)
+            {
+                if (tablero[fila, i] == numero || tablero[i, columna] == numero)
+                    return false;
+            }
+
+            int startRow = fila / 3 * 3;
+            int startCol = columna / 3 * 3;
+
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    if (tablero[startRow + i, startCol + j] == numero)
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool TryParseInput(string input, out int fila, out int columna, out int numero)
+        {
+            string[] partes = input.Split(' ');
+            if (partes.Length == 3 &&
+                int.TryParse(partes[0], out fila) &&
+                int.TryParse(partes[1], out columna) &&
+                int.TryParse(partes[2], out numero))
+            {
+                fila--;
+                columna--;
+                return true;
+            }
+            fila = columna = numero = -1;
+            return false;
         }
     }
 }
