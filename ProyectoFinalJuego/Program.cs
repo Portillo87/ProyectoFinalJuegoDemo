@@ -1,10 +1,13 @@
-﻿using ProyectoFinalJuego;
+using System;
 
-public class Program
+namespace JuegoSudoku
 {
-    private static void Main(string[] args)
+    class Program
     {
-        Game juego = new Game();
-        juego.Iniciar();
+        static void Main()
+        {
+            Juego juego = new Juego();
+            juego.Iniciar();
+        }
     }
 }
