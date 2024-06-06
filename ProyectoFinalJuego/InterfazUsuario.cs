@@ -20,6 +20,7 @@ namespace JuegoSudoku
             AnsiConsole.MarkupLine("1. El objetivo es llenar una cuadrícula de 9×9 con dígitos.");
             AnsiConsole.MarkupLine("2. Cada columna, cada fila y cada una de las nueve subcuadrículas de 3×3 deben contener todos los dígitos del 1 al 9.");
             AnsiConsole.MarkupLine("3. Usa el formato 'fila columna número' para colocar un número en el tablero.");
+            AnsiConsole.MarkupLine("4. Recuerda que en el sudoku no puedes eliminar numeros asi que si te equivocas tienes que reiniciar el tablero :c.");
             AnsiConsole.MarkupLine("Presiona cualquier tecla para regresar al menú principal...");
             Console.ReadKey();
         }
