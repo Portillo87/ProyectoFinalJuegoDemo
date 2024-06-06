@@ -9,17 +9,21 @@ namespace JuegoSudoku
         private Thread musicaDeFondoThread;
         private string musicaDeFondo;
         private string sonidoVictoria;
+        private CancellationTokenSource cancellationTokenSource;
 
         public Musica(string musicaDeFondo, string sonidoVictoria)
         {
             this.musicaDeFondo = musicaDeFondo;
             this.sonidoVictoria = sonidoVictoria;
+            cancellationTokenSource = new CancellationTokenSource();
         }
 
         public void IniciarMusicaDeFondo()
         {
-            musicaDeFondoThread = new Thread(ReproducirMusicaDeFondo);
-            musicaDeFondoThread.IsBackground = true;
+            musicaDeFondoThread = new Thread(() => ReproducirMusicaDeFondo(cancellationTokenSource.Token))
+            {
+                IsBackground = true
+            };
             musicaDeFondoThread.Start();
         }
 
@@ -27,7 +31,8 @@ namespace JuegoSudoku
         {
             if (musicaDeFondoThread != null && musicaDeFondoThread.IsAlive)
             {
-                musicaDeFondoThread.Abort();
+                cancellationTokenSource.Cancel();
+                musicaDeFondoThread.Join();
             }
         }
 
@@ -46,13 +51,17 @@ namespace JuegoSudoku
             }
         }
 
-        private void ReproducirMusicaDeFondo()
+        private void ReproducirMusicaDeFondo(CancellationToken token)
         {
             try
             {
                 using (SoundPlayer player = new SoundPlayer(musicaDeFondo))
                 {
-                    player.PlayLooping();
+                    while (!token.IsCancellationRequested)
+                    {
+                        player.PlayLooping();
+                        Thread.Sleep(1000);  // Delay to allow for cancellation check
+                    }
                 }
             }
             catch (Exception ex)

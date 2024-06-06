@@ -1,10 +1,5 @@
 using Spectre.Console;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Media;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace JuegoSudoku
 {
@@ -13,15 +8,15 @@ namespace JuegoSudoku
         public static void ShowWelcomeMessage()
         {
             var panel = new Panel("[bold]Bienvenido al Juego de sudoku[/]")
-               .Border(BoxBorder.Rounded)
-               .BorderStyle(Style.Parse("blue"))
-               .Header("SUDOKU", Justify.Center);
-        AnsiConsole.Write(panel);
+                .Border(BoxBorder.Rounded)
+                .BorderStyle(Style.Parse("blue"))
+                .Header("SUDOKU", Justify.Center);
+            AnsiConsole.Write(panel);
         }
 
         public static void MostrarPuntuacion(int puntuacion)
         {
-            Console.WriteLine($"Puntuación: {puntuacion}");
+            AnsiConsole.MarkupLine($"[bold]Puntuación: {puntuacion}[/]");
         }
 
         public static void MostrarAyuda()
@@ -30,7 +25,7 @@ namespace JuegoSudoku
             AnsiConsole.MarkupLine("1. El objetivo es llenar una cuadrícula de 9×9 con dígitos.");
             AnsiConsole.MarkupLine("2. Cada columna, cada fila y cada una de las nueve subcuadrículas de 3×3 deben contener todos los dígitos del 1 al 9.");
             AnsiConsole.MarkupLine("3. Usa el formato 'fila columna número' para colocar un número en el tablero.");
-            AnsiConsole.MarkupLine("4. Recuerda que en el sudoku no puedes eliminar numeros asi que si te equivocas tienes que reiniciar el tablero :.");
+            AnsiConsole.MarkupLine("4. Recuerda que en el sudoku no puedes eliminar números así que si te equivocas tienes que reiniciar el tablero.");
             AnsiConsole.MarkupLine("Presiona cualquier tecla para regresar al menú principal...");
             Console.ReadKey();
         }
@@ -96,13 +91,14 @@ namespace JuegoSudoku
 
         public static void MostrarMensajeError(string mensaje)
         {
-            Console.WriteLine($"{mensaje} Presiona cualquier tecla para intentarlo de nuevo...");
+            AnsiConsole.MarkupLine($"[bold red]{mensaje}[/]");
+            Console.WriteLine("Presiona cualquier tecla para intentarlo de nuevo...");
             Console.ReadKey();
         }
 
         public static void MostrarMensajeVictoria(int puntuacion)
         {
-            Console.WriteLine($"¡Felicidades! Completaste el rompecabezas de Sudoku con una puntuación de {puntuacion}.");
+            AnsiConsole.MarkupLine($"[bold green]¡Felicidades! Completaste el rompecabezas de Sudoku con una puntuación de {puntuacion}.[/]");
             Console.WriteLine("Presiona cualquier tecla para continuar...");
             Console.ReadKey();
         }

@@ -1,8 +1,5 @@
 using Spectre.Console;
 using System;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace JuegoSudoku
 {
@@ -47,6 +44,8 @@ namespace JuegoSudoku
                         break;
                     case "[red]Salir (borrar system 32)[/]":
                         musica.DetenerMusicaDeFondo();
+                        GC.Collect();
+                        GC.WaitForPendingFinalizers();
                         return;
                 }
             }
@@ -64,6 +63,8 @@ namespace JuegoSudoku
 
                 if (entrada.ToLower() == "salir")
                 {
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
                     return;
                 }
 
@@ -110,6 +111,5 @@ namespace JuegoSudoku
             Console.WriteLine("Presiona cualquier tecla para volver al menú principal...");
             Console.ReadKey();
         }
-
     }
-}   
+}

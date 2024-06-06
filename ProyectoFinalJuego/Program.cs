@@ -1,5 +1,5 @@
 using System;
-using System.Media;
+using Spectre.Console;
 
 namespace JuegoSudoku
 {
@@ -7,8 +7,21 @@ namespace JuegoSudoku
     {
         static void Main()
         {
-            Juego juego = new Juego();
-            juego.Iniciar();
+            try
+            {
+                Juego juego = new Juego();
+                juego.Iniciar();
+            }
+            catch (Exception ex)
+            {
+                AnsiConsole.WriteException(ex);
+            }
+            finally
+            {
+                AnsiConsole.Clear();
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
         }
     }
 }
