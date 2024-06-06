@@ -1,39 +1,46 @@
 using Spectre.Console;
 using System;
-using System.Media;
-using System.Threading;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace JuegoSudoku
 {
-    internal class Juego
+    public class Juego
     {
         private Tablero tablero;
-        private InterfazUsuario interfazUsuario;
+        private int puntuacion;
         private Musica musica;
 
         public Juego()
         {
             tablero = new Tablero();
-            interfazUsuario = new InterfazUsuario();
-            musica = new Musica();
+            puntuacion = 0;
+            musica = new Musica("waluigi.wav", "victory.wav");
+            musica.IniciarMusicaDeFondo();
         }
 
         public void Iniciar()
         {
-            musica.IniciarMusicaDeFondo();
-
             while (true)
             {
                 AnsiConsole.Clear();
-                var eleccion = interfazUsuario.MostrarMenuPrincipal();
+                InterfazUsuario.ShowWelcomeMessage();
+                var eleccion = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .PageSize(10)
+                        .AddChoices(new[] { "Jugar", "Resolver Automáticamente [red](SOLO USAR DESPUES DE HABERLE DADO A JUGAR)[/]", "Ayuda", "[green]Reiniciar Tablero[/]", "[red]Salir (borrar system 32)[/]" }));
 
                 switch (eleccion)
                 {
                     case "Jugar":
                         Jugar();
                         break;
+                    case "Resolver Automáticamente [red](SOLO USAR DESPUES DE HABERLE DADO A JUGAR)[/]":
+                        ResolverAutomaticamente();
+                        break;
                     case "Ayuda":
-                        interfazUsuario.MostrarAyuda();
+                        InterfazUsuario.MostrarAyuda();
                         break;
                     case "[green]Reiniciar Tablero[/]":
                         tablero.Reiniciar();
@@ -50,38 +57,59 @@ namespace JuegoSudoku
             while (true)
             {
                 AnsiConsole.Clear();
-                interfazUsuario.ImprimirTablero(tablero);
-                Console.WriteLine($"Puntuación: {tablero.Puntuacion}");
-                string entrada = interfazUsuario.PedirMovimiento();
+                tablero.Imprimir();
+                InterfazUsuario.MostrarPuntuacion(puntuacion);
+                Console.WriteLine("Ingresa tu movimiento en el formato 'fila columna número' (ej., '1 2 3' para colocar 3 en la fila 1, columna 2) o 'salir' para volver al menú principal:");
+                string entrada = Console.ReadLine();
 
                 if (entrada.ToLower() == "salir")
                 {
                     return;
                 }
 
-                if (!tablero.RealizarMovimiento(entrada))
+                if (!InterfazUsuario.TryParseInput(entrada, out int fila, out int columna, out int numero) ||
+                    !tablero.EsMovimientoValido(fila, columna, numero))
                 {
-                    interfazUsuario.MostrarMensaje("Entrada inválida o movimiento no permitido. Presiona cualquier tecla para intentarlo de nuevo...");
-                    Console.ReadKey();
+                    InterfazUsuario.MostrarMensajeError("Entrada inválida o movimiento no válido.");
                     continue;
                 }
 
-                if (tablero.EsCompleto())
+                tablero.RealizarMovimiento(fila, columna, numero);
+                puntuacion += 10;
+
+                if (tablero.EsTableroCompleto())
                 {
                     AnsiConsole.Clear();
-                    interfazUsuario.ImprimirTablero(tablero);
-                    interfazUsuario.ReproducirSonidoVictoria();
-                    interfazUsuario.MostrarMensaje($"¡Felicidades! Completaste el rompecabezas de Sudoku con una puntuación de {tablero.Puntuacion}.");
-                    Console.ReadKey();
+                    tablero.Imprimir();
+                    musica.ReproducirSonidoVictoria();
+                    InterfazUsuario.MostrarMensajeVictoria(puntuacion);
                     break;
                 }
             }
 
-            if (interfazUsuario.PreguntarSiJugarDeNuevo())
+            if (InterfazUsuario.PreguntarReiniciar())
             {
                 tablero.Reiniciar();
                 Jugar();
             }
         }
+
+        private void ResolverAutomaticamente()
+        {
+            if (tablero.ResolverSudoku())
+            {
+                AnsiConsole.Clear();
+                tablero.Imprimir();
+                Console.WriteLine("El Sudoku ha sido resuelto automáticamente.");
+            }
+            else
+            {
+                Console.WriteLine("No se pudo resolver el Sudoku automáticamente.");
+            }
+
+            Console.WriteLine("Presiona cualquier tecla para volver al menú principal...");
+            Console.ReadKey();
+        }
+
     }
-}
+}   

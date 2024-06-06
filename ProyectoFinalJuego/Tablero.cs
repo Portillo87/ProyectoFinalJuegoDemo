@@ -1,13 +1,16 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Media;
+using System.Threading.Tasks;
 
 namespace JuegoSudoku
 {
-    internal class Tablero
+    public class Tablero
     {
-        private int[,] tablero;
-        public int Puntuacion { get; private set; }
-
         public const int Size = 9;
+        private int[,] tablero;
 
         public Tablero()
         {
@@ -17,28 +20,24 @@ namespace JuegoSudoku
         public void Reiniciar()
         {
             GenerarTableroAleatorio();
-            Puntuacion = 0;
         }
 
-        public bool RealizarMovimiento(string entrada)
+        public void Imprimir()
         {
-            if (!TryParseInput(entrada, out int fila, out int columna, out int numero) ||
-                fila < 0 || fila >= Size || columna < 0 || columna >= Size || numero < 1 || numero > 9)
-            {
-                return false;
-            }
-
-            if (tablero[fila, columna] != 0 || !EsMovimientoValido(fila, columna, numero))
-            {
-                return false;
-            }
-
-            tablero[fila, columna] = numero;
-            Puntuacion += 10;
-            return true;
+            InterfazUsuario.ImprimirTablero(tablero);
         }
 
-        public bool EsCompleto()
+        public bool EsMovimientoValido(int fila, int columna, int numero)
+        {
+            return InterfazUsuario.EsMovimientoValido(tablero, fila, columna, numero);
+        }
+
+        public void RealizarMovimiento(int fila, int columna, int numero)
+        {
+            tablero[fila, columna] = numero;
+        }
+
+        public bool EsTableroCompleto()
         {
             for (int i = 0; i < Size; i++)
             {
@@ -53,13 +52,42 @@ namespace JuegoSudoku
             return true;
         }
 
+        public bool ResolverSudoku()
+        {
+            for (int fila = 0; fila < Size; fila++)
+            {
+                for (int columna = 0; columna < Size; columna++)
+                {
+                    if (tablero[fila, columna] == 0)
+                    {
+                        for (int numero = 1; numero <= 9; numero++)
+                        {
+                            if (EsMovimientoValido(fila, columna, numero))
+                            {
+                                tablero[fila, columna] = numero;
+
+                                if (ResolverSudoku())
+                                {
+                                    return true;
+                                }
+
+                                tablero[fila, columna] = 0;
+                            }
+                        }
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
         private void GenerarTableroAleatorio()
         {
             tablero = new int[Size, Size];
             Random random = new Random();
             int count = 0;
 
-            while (count < 20) // 20 números aleatorios para empezar
+            while (count < 20)
             {
                 int fila = random.Next(0, Size);
                 int columna = random.Next(0, Size);
@@ -71,50 +99,6 @@ namespace JuegoSudoku
                     count++;
                 }
             }
-        }
-
-        private bool EsMovimientoValido(int fila, int columna, int numero)
-        {
-            for (int i = 0; i < Size; i++)
-            {
-                if (tablero[fila, i] == numero || tablero[i, columna] == numero)
-                    return false;
-            }
-
-            int startRow = fila / 3 * 3;
-            int startCol = columna / 3 * 3;
-
-            for (int i = 0; i < 3; i++)
-            {
-                for (int j = 0; j < 3; j++)
-                {
-                    if (tablero[startRow + i, startCol + j] == numero)
-                        return false;
-                }
-            }
-
-            return true;
-        }
-
-        private static bool TryParseInput(string input, out int fila, out int columna, out int numero)
-        {
-            string[] partes = input.Split(' ');
-            if (partes.Length == 3 &&
-                int.TryParse(partes[0], out fila) &&
-                int.TryParse(partes[1], out columna) &&
-                int.TryParse(partes[2], out numero))
-            {
-                fila--;
-                columna--;
-                return true;
-            }
-            fila = columna = numero = -1;
-            return false;
-        }
-
-        public int[,] ObtenerTablero()
-        {
-            return tablero;
         }
     }
 }
